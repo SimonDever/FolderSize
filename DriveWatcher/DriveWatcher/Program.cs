@@ -1,10 +1,14 @@
-﻿using System;
+﻿using System.Linq;
+using FileTree;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Permissions;
 
 public class DriveWatcher
 {
-    
+
     public static void Main()
     {
         Run();
@@ -12,6 +16,60 @@ public class DriveWatcher
 
     [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
     public static void Run()
+    {
+        //  FileWatcher();
+        string[] args = System.Environment.GetCommandLineArgs();
+
+        // If a directory is not specified, exit program. 
+        if (args.Length != 2)
+        {
+            // Display the proper way to call the program.
+            Console.WriteLine("Usage: Watcher.exe (directory)");
+            return;
+        }
+        var path = args[1];
+
+        GetDirectoryTree(path);
+    }
+
+    private static void GetDirectoryTree(string path)
+    {
+        var cur_dir = path;
+        string[] subdirs;
+        var bfsQ = new Queue<NNode<string>>();
+        var root = new NNode<string>(path);
+        var cur_node = root;
+        bfsQ.Enqueue(root);
+        while (bfsQ.Count > 0)
+        {
+            cur_node = bfsQ.Dequeue();
+            try
+            {
+                subdirs = Directory.GetDirectories(cur_node.Value);
+                foreach (var sd in subdirs)
+                {
+                    var child = new NNode<string>(sd);
+                    bfsQ.Enqueue(child);
+                    cur_node.Children.Add(child);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError(ex);
+            }
+        }
+        var dirTree = new NTree<string>(root);
+
+    }
+
+    private static void ShowError(Exception ex)
+    {
+        Console.Error.WriteLine(ex.Message);
+        if (System.Diagnostics.Debugger.IsAttached)
+            Console.WriteLine(ex.StackTrace);
+    }
+
+    private static void FileWatcher()
     {
         string[] args = System.Environment.GetCommandLineArgs();
 
@@ -31,7 +89,7 @@ public class DriveWatcher
         watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
            | NotifyFilters.FileName | NotifyFilters.DirectoryName;
         // Only watch text files.
-        
+
         watcher.IncludeSubdirectories = true;
         // Add event handlers.
         watcher.Changed += new FileSystemEventHandler(OnChanged);

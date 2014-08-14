@@ -12,26 +12,26 @@ namespace FileTree
     /// <typeparam name="T"></typeparam>
     public class NTree<T>
     {
-        public NNode<T> Root { get; private set; }
+        public NNode<T> Root { get;  set; }
 
         #region ctor
+        public NTree()
+        {
+        }
         public NTree(NNode<T> root)
         {
             Root = root;
-        } 
+        }
         public NTree(T rootValue)
         {
             throw new NotImplementedException();
         }
-        
+
         #endregion
 
-        public void AddNode(NNode<T> node, T value)
-        {
-            node = new NNode<T>(value, new ObservableQueue<NNode<T>>());
-        }
 
-        public IEnumerable<object> BFS (Func<NNode<T>,object> func, NNode<T> startNode)
+
+        public IEnumerable<object> BFS(Func<NNode<T>, object> func, NNode<T> startNode)
         {
             Queue<NNode<T>> bfsQ = new Queue<NNode<T>>();
             bfsQ.Enqueue(Root);
@@ -44,7 +44,34 @@ namespace FileTree
             }
         }
 
-        public IEnumerable<object> BFS(Func<NNode<T>, object> func) { yield return BFS(func, this.Root); }
+        public IEnumerable<object> BFS(Func<NNode<T>, object> func) { return BFS(func, this.Root); }
+        public IEnumerable<object> DFS(Func<NNode<T>, object> func) { return DFS(func, this.Root); }
+
+        public IEnumerable<object> DFS(Func<NNode<T>, object> func, NNode<T> startNode)
+        {
+            Stack<NNode<T>> dfsStack = new Stack<NNode<T>>();
+            var visitedList = new HashSet<NNode<T>>();
+            var curr = Root;
+            while (curr != null)
+            {
+                if (!visitedList.Contains(curr))
+                {
+                    yield return func(curr);
+                    visitedList.Add(curr);
+                }
+
+                var next = curr.Children.FirstOrDefault(p => !visitedList.Contains(p));
+                if (next == null)
+                {
+                    if (dfsStack.Count != 0)
+                        next = dfsStack.Pop();
+                }
+                else
+                    dfsStack.Push(curr);
+                curr = next;
+            }
+        }
+
 
     }
 }

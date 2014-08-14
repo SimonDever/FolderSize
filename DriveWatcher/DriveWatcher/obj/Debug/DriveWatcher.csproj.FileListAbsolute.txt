@@ -4,3 +4,9 @@ c:\users\ali\documents\visual studio 2012\Projects\DriveWatcher\DriveWatcher\bin
 c:\users\ali\documents\visual studio 2012\Projects\DriveWatcher\DriveWatcher\obj\Debug\DriveWatcher.csprojResolveAssemblyReference.cache
 c:\users\ali\documents\visual studio 2012\Projects\DriveWatcher\DriveWatcher\obj\Debug\DriveWatcher.exe
 c:\users\ali\documents\visual studio 2012\Projects\DriveWatcher\DriveWatcher\obj\Debug\DriveWatcher.pdb
+C:\Users\Ali\Dev\FolderSize\DriveWatcher\DriveWatcher\bin\Debug\DriveWatcher.exe.config
+C:\Users\Ali\Dev\FolderSize\DriveWatcher\DriveWatcher\obj\Debug\DriveWatcher.exe
+C:\Users\Ali\Dev\FolderSize\DriveWatcher\DriveWatcher\obj\Debug\DriveWatcher.pdb
+C:\Users\Ali\Dev\FolderSize\DriveWatcher\DriveWatcher\obj\Debug\DriveWatcher.csprojResolveAssemblyReference.cache
+C:\Users\Ali\Dev\FolderSize\DriveWatcher\DriveWatcher\bin\Debug\DriveWatcher.exe
+C:\Users\Ali\Dev\FolderSize\DriveWatcher\DriveWatcher\bin\Debug\DriveWatcher.pdb

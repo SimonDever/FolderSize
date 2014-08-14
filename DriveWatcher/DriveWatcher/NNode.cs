@@ -7,16 +7,23 @@ using System.Threading.Tasks;
 
 namespace FileTree
 {
-    class NNode<T> where T : object
+    public class NNode<T>
     {
-        public NNode(T value = default(T), ObservableCollection<NNode<T>> children = null)
+        public NNode(T value = default(T))
         {
             Value = value;
-            Children = children;
+            Children = new ObservableCollection<NNode<T>>();
+            Children.CollectionChanged += Children_CollectionChanged;
+        }
+
+        void Children_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            foreach (var i in e.NewItems)
+                (i as NNode<T>).Parent = this;
         }
 
         public T Value { get; set; }
-        public ObservableCollection<NNode<T>> Children { get; set; }
+        public ObservableCollection<NNode<T>> Children { get; private set; }
 
         public NNode<T> Parent { get; private set; }
         #region Shorthand readonly properties
