@@ -29,8 +29,6 @@ namespace FileTree
 
         #endregion
 
-
-
         public IEnumerable<object> BFS(Func<NNode<T>, object> func, NNode<T> startNode)
         {
             Queue<NNode<T>> bfsQ = new Queue<NNode<T>>();
@@ -45,33 +43,32 @@ namespace FileTree
         }
 
         public IEnumerable<object> BFS(Func<NNode<T>, object> func) { return BFS(func, this.Root); }
-        public IEnumerable<object> DFS(Func<NNode<T>, object> func, VisitingOrder visitingOrder) { return DFS(func, this.Root, visitingOrder); }
+        public void DFS(Func<NNode<T>, object> func, VisitingOrder visitingOrder) { DFS(func, this.Root, visitingOrder); }
 
-        public IEnumerable<object> DFS(Func<NNode<T>, object> func, NNode<T> startNode, VisitingOrder visitingOrder)
+        public void DFS(Func<NNode<T>, object> func, NNode<T> startNode, VisitingOrder visitingOrder)
         {
             Stack<NNode<T>> dfsStack = new Stack<NNode<T>>();
-            var visitedList = new HashSet<NNode<T>>();
             var curr = Root;
             while (curr != null)
             {
                 if (visitingOrder == VisitingOrder.Pre)
                 {
-                    if (!visitedList.Contains(curr))
+                    if (!curr.Visited)
                     {
-                        yield return func(curr);
-                        visitedList.Add(curr);
+                        func(curr);
+                        curr.Visited = true;
                     }
                 }
 
-                var next = curr.Children.FirstOrDefault(p => !visitedList.Contains(p));
+                var next = curr.Children.FirstOrDefault(p => !p.Visited);
                 if (next == null)
                 {
                     if (visitingOrder == VisitingOrder.Post)
                     {
-                        if (!visitedList.Contains(curr))
+                        if (!curr.Visited)
                         {
-                            yield return func(curr);
-                            visitedList.Add(curr);
+                            func(curr);
+                            curr.Visited = true;
                         }
                     }
                     if (dfsStack.Count != 0)

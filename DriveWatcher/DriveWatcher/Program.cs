@@ -6,9 +6,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Permissions;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 public class DriveWatcher
 {
+    
+
     static int errorCounter = 0;
 
     public static void Main()
@@ -35,26 +38,27 @@ public class DriveWatcher
 
         ulong fileCounter, dirCounter;
         var fileTree = GetDirectoryTree(path, out fileCounter, out dirCounter);
+
+
+        fileTree.DFS(o =>
+        {
+            if (o.Parent != null)
+                o.Parent.Value.Size += o.Value.Size;
+            return null;
+        },
+        VisitingOrder.Post);
+        Console.WriteLine(">>>> Total Size = {0}", HumanReadableSize((ulong)fileTree.Root.Value.Size));
         var runningTime = DateTime.Now - timerCounter;
         Console.WriteLine("\r\n>> It took {3} seconds to add {0} files and {1} folders to the tree. {2} operations could not be completed.", fileCounter, dirCounter, errorCounter, runningTime.Duration().TotalSeconds);
-        foreach (var e in
-        fileTree.DFS(o =>
-        {
-            Console.WriteLine("{0}\t{1}", o.Value.Path, o.Value.Size); return null;
-        },
-        VisitingOrder.Post)) ;
+    }
 
-
-        Console.WriteLine("PRE ORDER");
-
-        foreach (var e in
-        fileTree.DFS(o =>
-        {
-            Console.WriteLine("{0}\t{1}", o.Value.Path, o.Value.Size); return null;
-        },
-        VisitingOrder.Pre)) ;
-
-
+    private static string HumanReadableSize(ulong p)
+    {
+        ulong b = p % (1 << 10);
+        ulong kb = (p >> 10) % (1 << 10);
+        ulong mb = (p >> 20) % (1 << 10);
+        ulong gb = (p >> 30) % (1 << 10);
+        return String.Format("{0} GB and {1} MB and {2} KB and {3} Bytes", gb, mb, kb, b);
     }
     private static NTree<PathInfo> GetDirectoryTree(string path)
     {
@@ -64,9 +68,8 @@ public class DriveWatcher
     private static NTree<PathInfo> GetDirectoryTree(string path, out ulong FileCount, out ulong DirectoryCount)
     {
         var cur_dir = path;
-        string[] subdirs;
         var bfsQ = new Queue<NNode<PathInfo>>();
-        var root = new NNode<PathInfo>(new PathInfo(path, false));
+        var root = new NNode<PathInfo>(new PathInfo { Path = path });
         var cur_node = root;
         bfsQ.Enqueue(root);
         ulong dirCounter = 1, fileCounter = 0;
@@ -75,22 +78,14 @@ public class DriveWatcher
             cur_node = bfsQ.Dequeue();
             try
             {
-                subdirs = Directory.GetDirectories(cur_node.Value.Path);
+                var subdirs = FastFileOperations.GetDirectoriesAndFiles(cur_node.Value.Path);
                 foreach (var sd in subdirs)
                 {
-                    var child = new NNode<PathInfo>(new PathInfo(sd, false));
+                    var child = new NNode<PathInfo>(sd);
                     bfsQ.Enqueue(child);
                     cur_node.Children.Add(child);
                     dirCounter++;
 
-                }
-                var files = Directory.GetFiles(cur_node.Value.Path);
-                foreach (var file in files)
-                {
-                    var child = new NNode<PathInfo>(new PathInfo(file, true));
-                    cur_node.Children.Add(child);
-                    fileCounter++;
-                    cur_node.Value.Size += child.Value.Size;
                 }
             }
             catch (Exception ex)
@@ -105,10 +100,11 @@ public class DriveWatcher
 
     }
 
-    private static void ShowError(Exception ex)
+    private static void ShowError(Exception ex, bool supress = true)
     {
         errorCounter++;
-        Console.Error.WriteLine(ex.Message);
+        if (!supress)
+            Console.Error.WriteLine(ex.Message);
         if (System.Diagnostics.Debugger.IsAttached)
             Console.WriteLine(ex.StackTrace);
     }

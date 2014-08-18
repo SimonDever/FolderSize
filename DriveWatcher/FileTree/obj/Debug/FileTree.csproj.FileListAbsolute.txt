@@ -1,0 +1,5 @@
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\FileTree\bin\Debug\FileTree.dll
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\FileTree\bin\Debug\FileTree.pdb
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\FileTree\obj\Debug\FileTree.dll
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\FileTree\obj\Debug\FileTree.pdb
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\FileTree\obj\Debug\FileTree.csprojResolveAssemblyReference.cache

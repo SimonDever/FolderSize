@@ -9,21 +9,17 @@ namespace FileTree
 {
     public class NNode<T>
     {
+        public bool Visited = false;
         public NNode(T value = default(T))
         {
             Value = value;
-            Children = new ObservableCollection<NNode<T>>();
-            Children.CollectionChanged += Children_CollectionChanged;
+            Children = new List<NNode<T>>();
+
         }
 
-        void Children_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            foreach (var i in e.NewItems)
-                (i as NNode<T>).Parent = this;
-        }
 
         public T Value { get; set; }
-        public ObservableCollection<NNode<T>> Children { get; private set; }
+        public List<NNode<T>> Children { get; private set; }
 
         public NNode<T> Parent { get; private set; }
         #region Shorthand readonly properties

@@ -1,0 +1,8 @@
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\PerformanceAnalyzer\obj\Debug\PerformanceAnalyzer.csprojResolveAssemblyReference.cache
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\PerformanceAnalyzer\bin\Debug\PerformanceAnalyzer.exe.config
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\PerformanceAnalyzer\bin\Debug\PerformanceAnalyzer.exe
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\PerformanceAnalyzer\bin\Debug\PerformanceAnalyzer.pdb
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\PerformanceAnalyzer\bin\Debug\FileTree.dll
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\PerformanceAnalyzer\bin\Debug\FileTree.pdb
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\PerformanceAnalyzer\obj\Debug\PerformanceAnalyzer.exe
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\PerformanceAnalyzer\obj\Debug\PerformanceAnalyzer.pdb

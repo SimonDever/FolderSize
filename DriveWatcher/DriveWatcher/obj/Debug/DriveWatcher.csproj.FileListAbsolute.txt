@@ -10,3 +10,11 @@ C:\Users\Ali\Dev\FolderSize\DriveWatcher\DriveWatcher\obj\Debug\DriveWatcher.pdb
 C:\Users\Ali\Dev\FolderSize\DriveWatcher\DriveWatcher\obj\Debug\DriveWatcher.csprojResolveAssemblyReference.cache
 C:\Users\Ali\Dev\FolderSize\DriveWatcher\DriveWatcher\bin\Debug\DriveWatcher.exe
 C:\Users\Ali\Dev\FolderSize\DriveWatcher\DriveWatcher\bin\Debug\DriveWatcher.pdb
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\DriveWatcher\bin\Debug\DriveWatcher.exe.config
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\DriveWatcher\obj\Debug\DriveWatcher.exe
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\DriveWatcher\obj\Debug\DriveWatcher.pdb
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\DriveWatcher\bin\Debug\DriveWatcher.exe
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\DriveWatcher\bin\Debug\DriveWatcher.pdb
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\DriveWatcher\obj\Debug\DriveWatcher.csprojResolveAssemblyReference.cache
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\DriveWatcher\bin\Debug\FileTree.dll
+C:\Users\alavis\Dev\FolderSize\DriveWatcher\DriveWatcher\bin\Debug\FileTree.pdb
