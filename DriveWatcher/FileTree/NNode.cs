@@ -7,25 +7,54 @@ using System.Threading.Tasks;
 
 namespace FileTree
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [Serializable]
     public class NNode<T>
     {
-        public bool Visited = false;
+        #region ctor
         public NNode(T value = default(T))
         {
             Value = value;
-            Children = new List<NNode<T>>();
+            _children = new List<NNode<T>>();
+            //UnvisitedChildren = new List<NNode<T>>();
+            Nodes = 0;
+        }
+        #endregion
 
+        #region Properites
+        public long Nodes { get; set; }
+        public T Value { get; set; }
+        public NNode<T> Parent { get; private set; }
+        private List<NNode<T>> _children;
+
+        #endregion
+
+
+        #region Shorthand readonly properties        
+        public int NumberOfChildren { get { return _children.Count(); } }
+        public bool HasChildren { get { return NumberOfChildren != 0; } }
+        public bool IsNull { get { return Value == null; } }
+        public IList<NNode<T>> Children { get { return _children.AsReadOnly(); } }
+
+        #endregion
+
+        #region Basic operations
+        public void AddChild(NNode<T> child)
+        {
+            child.Parent = this;
+            _children.Add(child);
+            Nodes++;
+        }
+        public void RemoveChild(NNode<T> child)
+        {
+            child.Parent = null;
+            _children.Remove(child);
+            Nodes--;
         }
 
-
-        public T Value { get; set; }
-        public List<NNode<T>> Children { get; private set; }
-
-        public NNode<T> Parent { get; private set; }
-        #region Shorthand readonly properties
-        public int NumberofChildren { get { return Children.Count(); } }
-        public bool HasChildren { get { return NumberofChildren != 0; } }
-        public bool IsNull { get { return Value == null; } }
         #endregion
     }
 }

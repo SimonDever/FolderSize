@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -10,90 +11,106 @@ namespace FileTree
 {
     public static class FastFileOperations
     {
-        public const int MAX_PATH = 260;
-        public const int MAX_ALTERNATE = 14;
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        public struct WIN32_FIND_DATA
+        static IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
+        public static ulong GetFileSize(string path)
         {
-            public FileAttributes dwFileAttributes;
-            public FILETIME ftCreationTime;
-            public FILETIME ftLastAccessTime;
-            public FILETIME ftLastWriteTime;
-            public uint nFileSizeHigh; //changed all to uint, otherwise you run into unexpected overflow
-            public uint nFileSizeLow;  //|
-            public uint dwReserved0;   //|
-            public uint dwReserved1;   //v
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_PATH)]
-            public string cFileName;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_ALTERNATE)]
-            public string cAlternate;
+            Kernel32.WIN32_FIND_DATA findData;
+            var findHandle = Kernel32.FindFirstFileW(@"\\?\" + path + "*", out findData);
+            if (findHandle == INVALID_HANDLE_VALUE)
+                throw new IOException(String.Format("Cannot open file {0}.", path));
+            if (findData.nFileSizeLow == 0)
+                Debugger.Break();
+            return GetSizeByHandle(ref findData);
         }
-
-        [DllImport("kernel32", CharSet = CharSet.Unicode)]
-        public static extern IntPtr FindFirstFile(string lpFileName, out WIN32_FIND_DATA lpFindFileData);
-
-        [DllImport("kernel32", CharSet = CharSet.Unicode)]
-        public static extern bool FindNextFile(IntPtr hFindFile, out WIN32_FIND_DATA lpFindFileData);
-
-        [DllImport("kernel32.dll")]
-        public static extern bool FindClose(IntPtr hFindFile);
-
-        public static uint GetFileSize(string filename)
+        public static bool IsFile(string path)
         {
-            WIN32_FIND_DATA findData;
-            FindFirstFile(filename, out findData);
-            return findData.nFileSizeLow;
+            Kernel32.WIN32_FIND_DATA findData;
+            var findHandle = Kernel32.FindFirstFileW(@"\\?\" + path + "*", out findData);
+            return IsFile(ref findData);
         }
-
         public static PathInfo[] GetDirectoriesAndFiles(string path)
         {
-            IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
-            WIN32_FIND_DATA findData;
+            path += path.EndsWith(@"\") ? "" : @"\";
+            
+            Kernel32.WIN32_FIND_DATA findData;
 
             IntPtr findHandle;
             List<PathInfo> ret = new List<PathInfo>();
             // please note that the following line won't work if you try this on a network folder, like \\Machine\C$
             // simply remove the \\?\ part in this case or use \\?\UNC\ prefix
-            findHandle = FindFirstFile(@"\\?\" + path + @"\*", out findData);
+            findHandle = Kernel32.FindFirstFileW(@"\\?\" + path + "*", out findData);
             if (findHandle != INVALID_HANDLE_VALUE)
             {
                 do
                 {
-                    bool isFile = ((findData.dwFileAttributes & FileAttributes.Directory) == 0);
-                    string subdirectory = path + (path.EndsWith(@"\") ? "" : @"\") + findData.cFileName;
-                    ret.Add(new PathInfo { Path = subdirectory, IsFile = isFile, Size = isFile ? GetFileSize(subdirectory) : 0 });
+                    if (findData.cFileName == "." || findData.cFileName == "..")
+                        continue;
+                    bool isFile = IsFile(ref findData);
+                    string subdirectory = path + findData.cFileName;
+                    ret.Add(new PathInfo { Path = subdirectory, IsFile = isFile, Size = GetSizeByHandle(ref findData) });
                 }
-                while (FindNextFile(findHandle, out findData));
-                FindClose(findHandle);
+                while (Kernel32.FindNextFileW(findHandle, out findData));
+                Kernel32.FindClose(findHandle);
             }
             return ret.ToArray();
         }
 
-        public static string[] GetFiles(string path)
+        private static ulong GetSizeByHandle(ref Kernel32.WIN32_FIND_DATA findData)
         {
-            IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
-            WIN32_FIND_DATA findData;
-
-            IntPtr findHandle;
-            List<string> ret = new List<string>();
-
-            findHandle = FindFirstFile(@"\\?\" + path + @"\*", out findData);
-            if (findHandle != INVALID_HANDLE_VALUE)
-            {
-                do
-                {
-                    if ((findData.dwFileAttributes & FileAttributes.Directory) == 0)
-                    {
-
-                        string subdirectory = path + (path.EndsWith(@"\") ? "" : @"\") + findData.cFileName;
-                        ret.Add(subdirectory);
-                    }
-                }
-                while (FindNextFile(findHandle, out findData));
-                FindClose(findHandle);
-            }
-            return ret.ToArray();
+            return IsFile(ref findData) ? (findData.nFileSizeHigh * (((ulong)uint.MaxValue) + 1)) + findData.nFileSizeLow : 0;
         }
+
+        private static bool IsFile(ref Kernel32.WIN32_FIND_DATA findData)
+        {
+            return ((findData.dwFileAttributes & FileAttributes.Directory) == 0);
+        }
+
+        #region Create Tree
+
+        public static NTree<PathInfo> GetDirectoryTree(string path, out ulong FileCount, out ulong DirectoryCount)
+        {
+            var cur_dir = path;
+            var bfsQ = new Queue<NNode<PathInfo>>();
+            var root = new NNode<PathInfo>(new PathInfo { Path = path });
+            var cur_node = root;
+            bfsQ.Enqueue(root);
+            ulong dirCounter = 1, fileCounter = 0;
+            while (bfsQ.Count > 0)
+            {
+                cur_node = bfsQ.Dequeue();
+                var subdirs = FastFileOperations.GetDirectoriesAndFiles(cur_node.Value.Path);
+                foreach (var sd in subdirs)
+                {
+                    var child = new NNode<PathInfo>(sd);
+                    bfsQ.Enqueue(child);
+                    cur_node.AddChild(child);
+                    dirCounter++;
+                }
+            }
+            var dirTree = new NTree<PathInfo>(root);
+            FileCount = fileCounter;
+            DirectoryCount = dirCounter;
+            return dirTree;
+        }
+
+        public static NTree<PathInfo> GetDirectoryTree(string path)
+        {
+            ulong a, b;
+            return GetDirectoryTree(path, out a, out b);
+        }
+        #endregion
+
+        #region Helper
+
+        public static string HumanReadableSize(ulong p)
+        {
+            ulong b = p % (1 << 10);
+            ulong kb = (p >> 10) % (1 << 10);
+            ulong mb = (p >> 20) % (1 << 10);
+            ulong gb = (p >> 30) % (1 << 10);
+            return String.Format("{0} GB and {1} MB and {2} KB and {3} Bytes", gb, mb, kb, b);
+        }
+
+        #endregion
     }
 }

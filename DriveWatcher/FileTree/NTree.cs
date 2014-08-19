@@ -10,9 +10,15 @@ namespace FileTree
     /// A queue based n-ary tree structure
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [Serializable]
     public class NTree<T>
     {
+
+        #region Public properties
         public NNode<T> Root { get; set; }
+        public long Nodes { get { return Root.Nodes; } }
+        
+        #endregion
 
         #region ctor
         public NTree()
@@ -29,47 +35,48 @@ namespace FileTree
 
         #endregion
 
-        public IEnumerable<object> BFS(Func<NNode<T>, object> func, NNode<T> startNode)
+        #region BFS and DFS
+        public void BFS(Func<NNode<T>, object> func, NNode<T> startNode)
         {
             Queue<NNode<T>> bfsQ = new Queue<NNode<T>>();
             bfsQ.Enqueue(Root);
             while (bfsQ.Count != 0)
             {
                 var curr = bfsQ.Dequeue();
-                yield return func(curr);
+                func(curr);
                 foreach (var n in curr.Children)
                     bfsQ.Enqueue(n);
             }
         }
 
-        public IEnumerable<object> BFS(Func<NNode<T>, object> func) { return BFS(func, this.Root); }
+        public void BFS(Func<NNode<T>, object> func) { BFS(func, this.Root); }
         public void DFS(Func<NNode<T>, object> func, VisitingOrder visitingOrder) { DFS(func, this.Root, visitingOrder); }
 
         public void DFS(Func<NNode<T>, object> func, NNode<T> startNode, VisitingOrder visitingOrder)
         {
+            HashSet <NNode<T>> visitedNodes = new HashSet<NNode<T>>();
             Stack<NNode<T>> dfsStack = new Stack<NNode<T>>();
-            var curr = Root;
+            var curr = Root;            
             while (curr != null)
             {
-                if (visitingOrder == VisitingOrder.Pre)
-                {
-                    if (!curr.Visited)
-                    {
-                        func(curr);
-                        curr.Visited = true;
-                    }
-                }
+                
+                //if (visitingOrder == VisitingOrder.Pre)
+                //{
+                //    if (!curr.Visited)
+                //    {
+                //        func(curr);
+                //        curr.Visited = true;
+                //    }
+                //}
 
-                var next = curr.Children.FirstOrDefault(p => !p.Visited);
+                NNode<T> next = (curr.Children.Count == 0) ? null : curr.Children.FirstOrDefault(p => !visitedNodes.Contains(p));                
+                
                 if (next == null)
                 {
                     if (visitingOrder == VisitingOrder.Post)
                     {
-                        if (!curr.Visited)
-                        {
-                            func(curr);
-                            curr.Visited = true;
-                        }
+                        func(curr);
+                        visitedNodes.Add(curr);
                     }
                     if (dfsStack.Count != 0)
                         next = dfsStack.Pop();
@@ -79,7 +86,16 @@ namespace FileTree
                 curr = next;
             }
         }
-       
+        #endregion
 
+        #region Basic Operations
+        public void RemoveNode(NNode<T> node)
+        {
+            if (node == Root)
+                this.Root = null;
+            else
+                node.Parent.RemoveChild(node);
+        }
+        #endregion
     }
 }

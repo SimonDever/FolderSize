@@ -22,7 +22,7 @@ namespace FileTree
         //}
         public string Path { get;  set; }
         public bool IsFile { get;  set; }
-        public long Size {get; set;}
+        public ulong Size {get; set;}
         
     }
 }
